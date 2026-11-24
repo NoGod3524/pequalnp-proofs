@@ -1120,7 +1120,16 @@ def tab (t : Nat) (x : Fin 5 → Bool) : Bool :=
 set_option maxRecDepth 30000 in
 set_option maxHeartbeats 4000000 in
 def syntaxOK (g : Gate) : Bool :=
-  decide ((g.op = GateOp.and ∨ g.op = GateOp.or) ∧ g.inputs.length ≤ 2)
+  match g.op with
+  | .and | .or => decide (g.inputs.length ≤ 2)
+  | _ => false
+
+set_option maxRecDepth 30000 in
+set_option maxHeartbeats 4000000 in
+theorem syntaxOK_sound {g : Gate} : syntaxOK g = true →
+    (g.op = GateOp.and ∨ g.op = GateOp.or) ∧ g.inputs.length ≤ 2 := by
+  rcases g with ⟨op, inputs⟩
+  cases op <;> simp [syntaxOK]
 
 
 set_option maxRecDepth 5000 in
@@ -1294,7 +1303,7 @@ lemma witnessFrom (T : ℕ) (C W : Circuit) (ok : W.gates.all syntaxOK = true)
       Circuit.eval ⟨gates', o'⟩ (List.ofFn x) = tab T x := by
   refine ⟨W.gates, W.output, ?_, bound, realizes⟩
   intro g hg
-  exact of_decide_eq_true (List.all_eq_true.mp ok g hg)
+  exact syntaxOK_sound (List.all_eq_true.mp ok g hg)
 
 set_option maxRecDepth 5000 in
 set_option maxHeartbeats 3000000 in
