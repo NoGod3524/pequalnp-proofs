@@ -1,4 +1,3 @@
-import Mathlib
 import PEqualNP.Defs
 
 -- The general incidence lower bound is due to Zamua, PR #6620.
